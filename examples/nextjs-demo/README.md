@@ -45,3 +45,5 @@ npm --prefix examples/nextjs-demo start
 ```
 
 `npm run test:e2e` from the repository root builds this app, starts separate loopback processes on ephemeral ports for every mode, and verifies compiled CLI behavior. Test fixtures supply their own synthetic environment and require no manual account setup.
+
+Login inputs and submit/logout buttons remain disabled until client hydration completes. This lets browser actionability checks wait for working controls rather than losing input or clicks on server-rendered markup. End-to-end regressions hold the JavaScript responses until the disabled controls have been observed, then verify login and logout after hydration resumes.

@@ -1,0 +1,2 @@
+# Keep fresh Windows checkouts consistent with Prettier and Unix CI.
+* text=auto eol=lf

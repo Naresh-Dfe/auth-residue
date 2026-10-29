@@ -90,7 +90,9 @@ try {
     installation,
   ).trim();
   if (executableVersion !== '0.1.0')
-    throw new Error('Installed executable shim failed.');
+    throw new Error(
+      `Installed executable shim failed: ${executableVersion ? 'unexpected version output' : 'no version output'}. Check CLI entry detection through filesystem links.`,
+    );
   for (const args of [
     ['--version'],
     ['--help'],

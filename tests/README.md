@@ -2,8 +2,8 @@
 
 This directory is for contributor reference and automated verification. It is excluded from the npm package.
 
-- `unit/` checks configuration, CLI contracts, result classification, redaction, reports, and release-data checks.
-- `integration/` exercises real Chromium against local synthetic fixtures, including origin enforcement and cleanup.
+- `unit/` checks configuration, CLI contracts, result classification, redaction, reports, release-data checks, and formatter compatibility after a fresh Git checkout.
+- `integration/` exercises real Chromium against local synthetic fixtures, including origin enforcement and cleanup, and verifies compiled CLI startup through filesystem links.
 - `e2e/` runs the compiled CLI against the repository's loopback-only Next.js demo.
 - `fixtures/` contains deliberately synthetic accounts, canaries, and corrected/broken test behavior. These values are not real user data and must never be replaced with production credentials.
 
