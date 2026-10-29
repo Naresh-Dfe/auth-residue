@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 import { run } from '../../src/core/engine.js';
 import { exitCode } from '../../src/core/results.js';
@@ -74,8 +74,51 @@ describe('real Chromium identity transitions', () => {
     ).toBe(true);
     expect(exitCode(result)).toBe(1);
   });
+  it.each(['account-switch', 'stale-tab'] as const)(
+    'requires the private route readiness baseline before %s transitions',
+    async (scenario) => {
+      const fixture = await startFixture();
+      fixtures.push(fixture);
+      const result = await run(
+        {
+          ...fixtureConfig(fixture.baseURL),
+          scenarios: [scenario],
+          routes: [
+            {
+              path: '/dashboard',
+              readySelector: '[data-testid="never-ready"]',
+            },
+          ],
+        },
+        { environment: testEnvironment },
+      );
+      const incomplete = result.findings.filter(
+        (finding) => finding.phase === 'lifecycle',
+      );
+      expect(incomplete.map((finding) => finding.evidence.failedPhase)).toEqual(
+        ['private-positive-controls'],
+      );
+      expect(fixture.issuedSessions.length).toBe(1);
+      expect(result.findings.some((finding) => finding.status === 'FAIL')).toBe(
+        false,
+      );
+      expect(exitCode(result)).toBe(2);
+    },
+  );
   it('detects A-only cached content under confirmed B identity (regression)', async () => {
     const { result } = await scan('cache-leak', ['account-switch']);
+    // Report assertion metadata, never browser diagnostics or private values.
+    const diagnostics = JSON.stringify(
+      result.findings.map(({ phase, status, evidence }) => ({
+        phase,
+        status,
+        failedPhase: evidence.failedPhase,
+        deadlineExceeded: evidence.deadlineExceeded,
+        identityBConfirmed: evidence.identityBConfirmed,
+        markerAMatched: evidence.markerAMatched,
+        markerBMatched: evidence.markerBMatched,
+      })),
+    );
     expect(
       result.findings.some(
         (finding) =>
@@ -83,6 +126,7 @@ describe('real Chromium identity transitions', () => {
           finding.status === 'FAIL' &&
           finding.evidence.identityBConfirmed === true,
       ),
+      diagnostics,
     ).toBe(true);
     expect(
       result.findings
@@ -193,6 +237,44 @@ describe('real Chromium identity transitions', () => {
 });
 
 describe('bounded network transport and reporting', () => {
+  it('doctor rejects a private route whose configured readiness is missing', async () => {
+    const fixture = await startFixture();
+    fixtures.push(fixture);
+    const { vi } = await import('vitest');
+    const directory = await mkdtemp(
+      join(tmpdir(), 'authresidue-doctor-ready-'),
+    );
+    if (
+      !resolve(directory).startsWith(
+        join(resolve(tmpdir()), 'authresidue-doctor-ready-'),
+      )
+    )
+      throw new Error('Unsafe doctor fixture cleanup');
+    for (const [name, value] of Object.entries(testEnvironment))
+      vi.stubEnv(name, value);
+    try {
+      const checks = await doctor(
+        validateConfig({
+          ...fixtureConfig(fixture.baseURL),
+          routes: [
+            {
+              path: '/dashboard',
+              readySelector: '[data-testid="never-ready"]',
+            },
+          ],
+          reports: { outputDir: join(directory, 'reports') },
+        }),
+      );
+      expect(
+        checks.find((check) => check.name === 'Selectors and authentication')
+          ?.ok,
+      ).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it('does not follow redirects and bounds bytes and deadlines', async () => {
     const fixture = await startFixture();
     fixtures.push(fixture);

@@ -8,6 +8,9 @@ import { inspectReleaseText, isPackagePathAllowed } from './check-release.mjs';
 const npmCLI = process.env.npm_execpath;
 if (!npmCLI) throw new Error('Run through npm run verify:package.');
 const root = fileURLToPath(new URL('..', import.meta.url));
+const expectedVersion = JSON.parse(
+  await readFile(join(root, 'package.json'), 'utf8'),
+).version;
 function npm(args, cwd = root) {
   const execution = spawnSync(process.execPath, [npmCLI, ...args], {
     cwd,
@@ -89,7 +92,7 @@ try {
     ['exec', '--offline', '--', 'authresidue', '--version'],
     installation,
   ).trim();
-  if (executableVersion !== '0.1.0')
+  if (executableVersion !== expectedVersion)
     throw new Error(
       `Installed executable shim failed: ${executableVersion ? 'unexpected version output' : 'no version output'}. Check CLI entry detection through filesystem links.`,
     );

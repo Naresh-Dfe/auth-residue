@@ -47,6 +47,7 @@
     "test:integration": "npm run build && vitest run tests/integration",
     "test:e2e": "npm run build && vitest run tests/e2e",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run audit:release",
+    "check:release": "npm run check && npm --prefix examples/nextjs-demo run typecheck && npm pack --dry-run && npm run verify:package",
     "prepack": "npm run build && npm run audit:release",
     "verify:package": "node scripts/verify-package.mjs",
     "audit:release": "node scripts/check-release.mjs",

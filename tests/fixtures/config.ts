@@ -25,6 +25,8 @@ export function fixtureConfig(baseURL = 'http://127.0.0.1:3000'): ConfigInput {
       },
     },
     probes: [{ path: '/api/private' }],
-    timeouts: { action: 5000, navigation: 15000, scenario: 60000 },
+    // Shared CI workers need headroom for Chromium actionability and identity readiness.
+    // Deadline-specific tests supply their own short limits; assertions are never retried.
+    timeouts: { action: 15000, navigation: 15000, scenario: 60000 },
   };
 }

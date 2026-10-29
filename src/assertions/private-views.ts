@@ -25,6 +25,8 @@ export async function warmViews(
   if (!definition) throw new Error('Missing identity definition');
   for (const route of config.routes) {
     await navigate(page, route.path, config);
+    if (route.readySelector)
+      await page.locator(route.readySelector).waitFor({ state: 'visible' });
     await confirmIdentity(page, config, account);
     await waitForMarker(
       page,

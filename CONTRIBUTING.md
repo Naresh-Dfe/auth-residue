@@ -19,6 +19,8 @@ npm run verify:package
 
 On Linux, install Chromium's system dependencies through Playwright as needed. Windows PowerShell users can use npm.cmd/npx.cmd. `npm run format` applies formatting. Root `npm test` runs all suites, including the Next.js production build. Never use arbitrary sleeps to make tests pass; poll actual readiness with bounded deadlines. Do not run intentionally vulnerable fixtures on a public interface.
 
+After installing the root/demo dependencies and Chromium, run `npm run check:release` before pushing. It runs the same validation command as CI: typecheck, lint, formatting, all tests, privacy auditing, demo typecheck, package-content inspection, and disposable installed-package verification. Exercise Node 22 and 24 when checking compatibility; a local run on another Node major does not cover the CI matrix. Linux and macOS still require their CI jobs to pass.
+
 Git checks text files out with LF line endings on every platform, matching Prettier. After pulling the line-ending policy into an existing Windows checkout, run `npm run format` if local files still have CRLF endings.
 
 Dependabot proposes monthly npm minor and patch version updates. Routine npm major version updates are deferred for a separate compatibility review; security updates are unaffected by this version-update rule. Check peer dependency ranges and the Node 22/24 CI matrix before upgrading major versions. The current TypeScript ESLint parser requires TypeScript below 6.1, so a TypeScript 7 upgrade needs a compatible parser first. GitHub Actions updates are reviewed separately.

@@ -31,13 +31,5 @@ jobs:
       - run: npm ci --cache .verification/npm-cache
       - run: npm run demo:install
       - run: npx playwright install --with-deps chromium
-      - run: npm run typecheck
-      - run: npm run lint
-      - run: npm run format:check
-      - run: npm run build
-      - run: npm test
-      - run: npm run audit:release
-      - run: npm --prefix examples/nextjs-demo run typecheck
-      - run: npm pack --dry-run
-      - run: npm run verify:package
+      - run: npm run check:release
       # No upload, deployment, release creation, or npm publication occurs.

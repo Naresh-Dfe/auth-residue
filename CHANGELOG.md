@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.1.0 — Unreleased
+## Unreleased
+
+- Honor configured route readiness before private positive controls, second-tab baselines, and doctor checks; stop before transitions when readiness is missing.
+- Wait for child process output streams to close before parsing end-to-end CLI results.
+- Include allowlisted phase, identity, and marker-match metadata in cache-leak regression failures.
+- Use one complete check:release command locally and in CI to prevent validation drift.
+- Compare the installed CLI version with package.json during package verification, catching stale version constants before release.
+- Allow 15 seconds for synthetic fixture actions on shared CI workers; keep deadline-specific tests explicit and retain inconclusive identity failures without assertion retries.
+
+## 0.1.0
 
 - Fix CLI startup through npm executable symlinks on Unix; compare resolved entry paths and cover linked invocation, help/version/init/list, and safe module import with regression tests.
 - Keep Git checkouts on LF line endings for Windows formatting checks, with a fresh-checkout regression test.
@@ -20,4 +29,4 @@
 - Deterministic fixture tests and a loopback Next.js demo with secure and four deliberately broken modes.
 - Contribution/security guidance, local package verification, and cross-platform CI definition.
 
-Service worker behavior, automatic bearer extraction, permission changes, mutation probes, multi-worker execution, and additional browsers are deferred. No release, publication, or deployment has occurred.
+Service worker behavior, automatic bearer extraction, permission changes, mutation probes, multi-worker execution, and additional browsers are deferred.
