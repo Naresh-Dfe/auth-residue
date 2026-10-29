@@ -1,0 +1,43 @@
+name: Validate and prepare package
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NO_COLOR: '1'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            examples/nextjs-demo/package-lock.json
+      - run: npm ci --cache .verification/npm-cache
+      - run: npm run demo:install
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      - run: npm test
+      - run: npm run audit:release
+      - run: npm --prefix examples/nextjs-demo run typecheck
+      - run: npm pack --dry-run
+      - run: npm run verify:package
+      # No upload, deployment, release creation, or npm publication occurs.

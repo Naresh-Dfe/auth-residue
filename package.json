@@ -1,0 +1,71 @@
+{
+  "name": "authresidue",
+  "version": "0.1.0",
+  "description": "Test what survives after the user leaves. Local-first identity-transition testing with Chromium.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "authresidue": "dist/cli/main.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs/configuration.md",
+    "docs/results.md",
+    "docs/security-model.md",
+    "docs/limitations.md",
+    "docs/troubleshooting.md"
+  ],
+  "keywords": [
+    "logout",
+    "security",
+    "privacy",
+    "playwright",
+    "session",
+    "testing"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "npm run build && vitest run tests/e2e",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run audit:release",
+    "prepack": "npm run build && npm run audit:release",
+    "verify:package": "node scripts/verify-package.mjs",
+    "audit:release": "node scripts/check-release.mjs",
+    "demo:install": "npm --prefix examples/nextjs-demo ci",
+    "demo": "npm --prefix examples/nextjs-demo run dev"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "jiti": "^2.6.1",
+    "playwright": "^1.58.0",
+    "zod": "^4.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.19.0",
+    "eslint": "^10.13.0",
+    "prettier": "^3.8.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.53.0",
+    "vitest": "^4.0.18"
+  }
+}
