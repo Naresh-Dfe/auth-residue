@@ -4,7 +4,7 @@
 
 | Run field                          | Contract                                                     |
 | ---------------------------------- | ------------------------------------------------------------ |
-| `schemaVersion`, `toolVersion`     | `1.0`, `0.1.0`                                               |
+| `schemaVersion`, `toolVersion`     | `1.0`, `0.1.1`                                               |
 | `runId`, `startedAt`, `durationMs` | UUID, UTC ISO timestamp, nonnegative wall-clock milliseconds |
 | `targetOrigin`                     | Tested origin; no query or credentials collected             |
 | `environment`                      | Node version, platform, Chromium version                     |
@@ -14,6 +14,8 @@
 | `limitations`                      | Explicit run-wide coverage limits                            |
 
 The `configuration` object records route/probe counts, action/navigation/scenario deadlines, enabled storage categories, and retention policy. Raw selectors and credential references are omitted.
+
+Version 0.1.1 continues to read and render schema 1.0 reports produced by 0.1.0. The original toolVersion remains visible in regenerated reports.
 
 Each finding contains `id`, `scenarioId`, `scenarioName`, `status`, `severity`, `title`, `expected`, `actual`, `evidence`, `timestamp`, optional `route`, `phase`, `reproduction`, `remediation`, `limitations`, `durationMs`. Evidence values are primitive strings, booleans, or finite numbers. Routes omit query/fragment. A marker match is a boolean; no surrounding private content is stored. Findings with status other than FAIL must have severity none.
 

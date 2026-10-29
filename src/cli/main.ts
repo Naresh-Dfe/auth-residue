@@ -29,7 +29,7 @@ export function createCLI(): Command {
     .description(
       'Test what survives after the user leaves. Authorized local identity-transition testing.',
     )
-    .version('0.1.0')
+    .version('0.1.1')
     .showHelpAfterError()
     .exitOverride();
   program

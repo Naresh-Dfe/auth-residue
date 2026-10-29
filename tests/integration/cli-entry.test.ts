@@ -62,7 +62,7 @@ function execute(entry: string, args: readonly string[]) {
 
 describe('compiled CLI entry through filesystem links', () => {
   it.each([
-    [['--version'], '0.1.0'],
+    [['--version'], '0.1.1'],
     [['--help'], 'Usage: authresidue'],
     [['list'], 'logout-session'],
     [['init', '--non-interactive'], 'Created authresidue.config.ts'],
@@ -78,7 +78,7 @@ describe('compiled CLI entry through filesystem links', () => {
     () => {
       const result = execute(fileLink, ['--version']);
       expect(result.status).toBe(0);
-      expect(result.stdout.trim()).toBe('0.1.0');
+      expect(result.stdout.trim()).toBe('0.1.1');
       expect(result.stderr).toBe('');
     },
   );

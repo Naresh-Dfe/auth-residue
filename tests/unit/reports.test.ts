@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdtemp, rm, writeFile, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   exitCode,
@@ -25,7 +25,7 @@ import { renderTerminal } from '../../src/reporters/terminal.js';
 export function sampleResult(): RunResult {
   return {
     schemaVersion: '1.0',
-    toolVersion: '0.1.0',
+    toolVersion: '0.1.1',
     runId: randomUUID(),
     startedAt: new Date().toISOString(),
     durationMs: 10,
@@ -70,6 +70,31 @@ export function sampleResult(): RunResult {
 }
 
 describe('reports and statuses', () => {
+  it.each(['0.1.0', '0.1.1'] as const)(
+    'reads and renders schema 1.0 reports from tool %s',
+    async (toolVersion) => {
+      const directory = await mkdtemp(
+        join(tmpdir(), 'authresidue-report-version-'),
+      );
+      if (
+        !resolve(directory).startsWith(
+          join(resolve(tmpdir()), 'authresidue-report-version-'),
+        )
+      )
+        throw new Error('Unsafe version-report fixture cleanup');
+      try {
+        const result = { ...sampleResult(), toolVersion };
+        const paths = await writeReports(result, directory);
+        expect((await readResults(paths.json)).toolVersion).toBe(toolVersion);
+        expect(await readFile(paths.html!, 'utf8')).toContain(
+          `v${toolVersion}`,
+        );
+      } finally {
+        await rm(directory, { recursive: true, force: true });
+      }
+    },
+  );
+
   it('classifies failures, interruption, incomplete coverage, and strict mode', () => {
     const result = sampleResult();
     expect(exitCode(result)).toBe(0);
