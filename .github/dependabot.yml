@@ -4,6 +4,9 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
       development:
         dependency-type: development
@@ -11,6 +14,9 @@ updates:
     directory: /examples/nextjs-demo
     schedule:
       interval: monthly
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
