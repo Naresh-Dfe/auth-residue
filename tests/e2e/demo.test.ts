@@ -44,7 +44,8 @@ function execute(
       stderr += data.toString();
     });
     child.on('error', reject);
-    child.on('exit', (code) => resolve({ code, stdout, stderr }));
+    // The exit event can precede the final stdout/stderr chunks on CI.
+    child.on('close', (code) => resolve({ code, stdout, stderr }));
   });
 }
 

@@ -17,6 +17,64 @@ afterEach(async () => {
 });
 
 describe('hardening regressions', () => {
+  it('requires readiness in the second tab before performing logout', async () => {
+    const fixture = await startFixture();
+    fixtures.push(fixture);
+    const launch = chromium.launch.bind(chromium);
+    vi.spyOn(chromium, 'launch').mockImplementation(async (options) => {
+      const browser = await launch(options);
+      const createContext = browser.newContext.bind(browser);
+      vi.spyOn(browser, 'newContext').mockImplementation(
+        async (contextOptions) => {
+          const context = await createContext(contextOptions);
+          const createPage = context.newPage.bind(context);
+          let firstPage = true;
+          vi.spyOn(context, 'newPage').mockImplementation(async () => {
+            const page = await createPage();
+            if (firstPage) {
+              firstPage = false;
+              await page.addInitScript(() => {
+                document.addEventListener('DOMContentLoaded', () => {
+                  const ready = document.createElement('span');
+                  ready.setAttribute('data-testid', 'fixture-ready');
+                  ready.textContent = 'Ready';
+                  document.body.append(ready);
+                });
+              });
+            }
+            return page;
+          });
+          return context;
+        },
+      );
+      return browser;
+    });
+    const result = await run(
+      {
+        ...fixtureConfig(fixture.baseURL),
+        scenarios: ['stale-tab'],
+        routes: [
+          {
+            path: '/dashboard',
+            readySelector: '[data-testid="fixture-ready"]',
+          },
+        ],
+      },
+      { environment: testEnvironment },
+    );
+    expect(
+      result.findings
+        .filter((finding) => finding.phase === 'lifecycle')
+        .map((finding) => finding.evidence.failedPhase),
+    ).toEqual(['transition-preparation']);
+    expect(
+      result.findings.some((finding) => finding.phase === 'post-logout'),
+    ).toBe(false);
+    expect(
+      result.findings.every((finding) => finding.status === 'INCONCLUSIVE'),
+    ).toBe(true);
+  });
+
   it('applies the scenario deadline while browser context creation is still pending', async () => {
     const fixture = await startFixture();
     fixtures.push(fixture);

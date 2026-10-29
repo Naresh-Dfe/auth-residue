@@ -81,6 +81,8 @@ export async function executeScenario(runtime: ScenarioRuntime): Promise<void> {
     for (const route of config.routes) {
       const tab = await context.newPage();
       await navigate(tab, route.path, config);
+      if (route.readySelector)
+        await tab.locator(route.readySelector).waitFor({ state: 'visible' });
       await confirmIdentity(tab, config, 'a');
       await waitForMarker(
         tab,

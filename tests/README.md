@@ -9,4 +9,6 @@ This directory is for contributor reference and automated verification. It is ex
 
 Use `npm run test:unit`, `npm run test:integration`, or `npm run test:e2e`. The full `npm test` builds the CLI and runs every suite. Browser tests require Playwright Chromium; end-to-end tests also require `npm run demo:install`.
 
+Shared synthetic fixtures allow 15 seconds per browser action or identity-readiness check to accommodate loaded CI workers. Scenario and navigation limits remain bounded. Deadline-specific tests override these limits explicitly. Missing identities still produce INCONCLUSIVE, and failed security assertions are never retried.
+
 Temporary authentication and fixture state stay in memory or disposable test directories. Generated Next.js output is ignored. Never commit real application reports, storage state, secrets, screenshots, or traces.

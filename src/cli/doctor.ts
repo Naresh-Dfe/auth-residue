@@ -100,6 +100,10 @@ export async function doctor(config: Config): Promise<DoctorCheck[]> {
           await login(page, config, resolveCredentials(config), 'a');
           for (const route of config.routes) {
             await navigate(page, route.path, config);
+            if (route.readySelector)
+              await page
+                .locator(route.readySelector)
+                .waitFor({ state: 'visible' });
             await confirmIdentity(page, config, 'a');
             await waitForMarker(
               page,
