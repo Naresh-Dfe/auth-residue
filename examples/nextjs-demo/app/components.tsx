@@ -14,6 +14,7 @@ export function LoginForm() {
         Email
         <input
           name="email"
+          disabled={!ready}
           type="email"
           autoComplete="username"
           required
@@ -24,13 +25,14 @@ export function LoginForm() {
         Password
         <input
           name="password"
+          disabled={!ready}
           type="password"
           autoComplete="current-password"
           required
           placeholder="Synthetic test password"
         />
       </label>
-      <button type="submit">
+      <button type="submit" disabled={!ready}>
         Open test workspace <span aria-hidden="true">↗</span>
       </button>
       {ready && (
@@ -85,11 +87,15 @@ export function StalePanel() {
 
 export function LogoutButton({ mode }: { mode: Mode }) {
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(true);
+  }, []);
   return (
     <button
       className="secondary"
       data-testid="logout"
-      disabled={busy}
+      disabled={!ready || busy}
       onClick={async () => {
         setBusy(true);
         const response = await fetch('/api/logout', { method: 'POST' });

@@ -5,6 +5,7 @@
 - Fix CLI startup through npm executable symlinks on Unix; compare resolved entry paths and cover linked invocation, help/version/init/list, and safe module import with regression tests.
 - Keep Git checkouts on LF line endings for Windows formatting checks, with a fresh-checkout regression test.
 - Defer routine npm major version updates in Dependabot until compatibility review; retain minor, patch, and security updates.
+- Keep demo authentication controls disabled until client hydration completes; cover delayed JavaScript loading and include allowlisted scenario phase diagnostics in end-to-end failures.
 
 - Restrict npm contents to runtime modules and user guides; keep tests, fixtures, scripts, and the local demo as repository-only development references.
 - Add source/staged-content privacy checks and disposable package verification; exclude local configuration, reports, caches, and internal notes from Git.

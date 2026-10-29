@@ -10,6 +10,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium } from 'playwright';
 import { resultSchema } from '../../src/core/results.js';
 import { fixtureConfig, testEnvironment } from '../fixtures/config.js';
+import { resolveCredentials, validateConfig } from '../../src/config/schema.js';
+import { launchControlledBrowser } from '../../src/browser/launcher.js';
+import { restrictContext } from '../../src/browser/network.js';
+import { login } from '../../src/auth/session.js';
 
 const demo = resolve('examples/nextjs-demo');
 const nextCLI = join(demo, 'node_modules/next/dist/bin/next');
@@ -111,6 +115,88 @@ afterAll(async () => {
 });
 
 describe('compiled package against the Next.js demo', () => {
+  it.each(['login', 'logout'] as const)(
+    'keeps %s controls disabled until delayed JavaScript hydrates',
+    async (action) => {
+      const server = await startDemo('cache-leak');
+      const config = validateConfig(fixtureConfig(server.baseURL));
+      let releaseScripts = () => {};
+      const scriptsReady = new Promise<void>((resolve) => {
+        releaseScripts = resolve;
+      });
+      let controlled:
+        Awaited<ReturnType<typeof launchControlledBrowser>> | undefined;
+      try {
+        controlled = await launchControlledBrowser(config);
+        const context = await controlled.browser.newContext({
+          serviceWorkers: 'block',
+        });
+        await restrictContext(context, config);
+        const page = await context.newPage();
+        page.setDefaultTimeout(15000);
+        if (action === 'logout') {
+          await page.goto(`${server.baseURL}/login`);
+          await page.locator('[data-testid="page-ready"]').waitFor();
+          await login(
+            page,
+            config,
+            resolveCredentials(config, testEnvironment),
+            'a',
+          );
+        }
+        await page.route('**/_next/**', async (route) => {
+          if (route.request().resourceType() === 'script') await scriptsReady;
+          await route.fallback();
+        });
+        await page.goto(
+          `${server.baseURL}/${action === 'login' ? 'login' : 'dashboard'}`,
+          {
+            waitUntil: 'commit',
+          },
+        );
+        const control = page.locator(
+          action === 'login' ? '[name="email"]' : '[data-testid="logout"]',
+        );
+        await control.waitFor({ state: 'visible' });
+        expect(await control.isDisabled()).toBe(true);
+        if (action === 'login') {
+          expect(await page.locator('[name="password"]').isDisabled()).toBe(
+            true,
+          );
+          expect(await page.locator('button[type="submit"]').isDisabled()).toBe(
+            true,
+          );
+          const enteringEmail = control.fill(
+            testEnvironment.AUTHRESIDUE_A_EMAIL,
+          );
+          releaseScripts();
+          await enteringEmail;
+          await page
+            .locator('[name="password"]')
+            .fill(testEnvironment.AUTHRESIDUE_A_PASSWORD);
+          await page.locator('button[type="submit"]').click();
+          await page.locator('[data-testid="identity"]').waitFor();
+          expect(
+            await page.locator('[data-testid="identity"]').innerText(),
+          ).toBe('Alice');
+        } else {
+          const leaving = control.click();
+          releaseScripts();
+          await leaving;
+          await page.locator('[data-testid="login-form"]').waitFor();
+          expect(await page.locator('[data-testid="identity"]').count()).toBe(
+            0,
+          );
+        }
+      } finally {
+        releaseScripts();
+        await controlled?.close();
+        await server.close();
+      }
+    },
+    60000,
+  );
+
   it.each([
     ['secure', 'logout-session', false],
     ['cache-leak', 'account-switch', true],
@@ -159,7 +245,20 @@ describe('compiled package against the Next.js demo', () => {
           output,
         ]);
         const result = resultSchema.parse(JSON.parse(execution.stdout));
-        expect(execution.code, execution.stderr).toBe(shouldFail ? 1 : 0);
+        // Include only allowlisted assertion metadata if CI cannot complete a transition.
+        const diagnostics = JSON.stringify(
+          result.findings.map(({ status, phase, evidence }) => ({
+            status,
+            phase,
+            ...(typeof evidence.failedPhase === 'string'
+              ? { failedPhase: evidence.failedPhase }
+              : {}),
+            ...(typeof evidence.deadlineExceeded === 'boolean'
+              ? { deadlineExceeded: evidence.deadlineExceeded }
+              : {}),
+          })),
+        );
+        expect(execution.code, diagnostics).toBe(shouldFail ? 1 : 0);
         expect(
           result.findings.some((finding) => finding.status === 'FAIL'),
         ).toBe(shouldFail);
