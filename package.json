@@ -1,6 +1,6 @@
 {
   "name": "authresidue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Test what survives after the user leaves. Local-first identity-transition testing with Chromium.",
   "type": "module",
   "license": "MIT",

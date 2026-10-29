@@ -176,7 +176,7 @@ export async function run(
   }
   const result: RunResult = {
     schemaVersion: '1.0',
-    toolVersion: '0.1.0',
+    toolVersion: '0.1.1',
     runId: randomUUID(),
     startedAt,
     durationMs: Date.now() - started,

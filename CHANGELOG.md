@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — Unreleased
 
 - Honor configured route readiness before private positive controls, second-tab baselines, and doctor checks; stop before transitions when readiness is missing.
 - Wait for child process output streams to close before parsing end-to-end CLI results.
@@ -8,6 +8,7 @@
 - Use one complete check:release command locally and in CI to prevent validation drift.
 - Compare the installed CLI version with package.json during package verification, catching stale version constants before release.
 - Allow 15 seconds for synthetic fixture actions on shared CI workers; keep deadline-specific tests explicit and retain inconclusive identity failures without assertion retries.
+- Align the package, CLI, and emitted report version at 0.1.1 while retaining schema 1.0 report compatibility with 0.1.0.
 
 ## 0.1.0
 

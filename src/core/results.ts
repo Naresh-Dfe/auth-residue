@@ -37,7 +37,7 @@ export type Finding = z.infer<typeof findingSchema>;
 export const resultSchema = z
   .object({
     schemaVersion: z.literal('1.0'),
-    toolVersion: z.literal('0.1.0'),
+    toolVersion: z.enum(['0.1.0', '0.1.1']),
     runId: z.string().uuid(),
     startedAt: z.iso.datetime(),
     durationMs: z.number().nonnegative(),
